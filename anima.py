@@ -8,6 +8,8 @@ from IPython.display import HTML
 from datetime import datetime
 import matplotlib
 import matplotlib.animation as animation
+from matplotlib import rcParams
+import numpy as np
 
 #organizando o dataframe
 def arruma_data(df):
@@ -52,7 +54,7 @@ epi_name = ['3 minutos (p1)', '3 minutos (p2)','3 minutos (p3)',
            'Motivos', 'Chernobyl', 'Nobel','Termodinâmica', 
             "Financiamento", "Mecânica Quântica", 'Graduação', "Relatividade Geral (p2)",
            'O Fim do Universo', 'Colab FMC', 'Mulheres na Física', 'Físicos no Mercado',
-            "Nanotecnologia",'Covid','Estrutura da Matéria']
+            "Nanotecnologia",'Covid','Estrutura da Matéria','Divulgação']
 			
 #dados semanais			
 dates = df['Time (UTC)']
@@ -72,22 +74,27 @@ s_dados.rename(columns = dates, inplace = True)
 s_dados.at[:,'Episodio'] = epi_name
 s_dados.reset_index(inplace = True)
 
+#lista de cores
 c = ['lightblue','#7CB9E8','#C0E8D5','#B284BE','#72A0C1','#EDEAE0',
 '#F0F8FF','#C46210','#EFDECD','#E52B50','#9F2B68','#F19CBB',
 '#AB274F','#D3212D','#3B7A57','#FFBF00','#FF7E00','#9966CC',
 '#A4C639','#CD9575','#665D1E','#915C83','#841B2D','#FAEBD7',
 '#008000','#8DB600','#FBCEB1','#00FFFF','#7FFFD4','#D0FF14',
-'#4B5320','#8F9779']
+'#4B5320','#8F9779','C0']
 
 colores = dict(zip(epi,c))
 
-fig, ax = plt.subplots(figsize=(15, 10))
-matplotlib.rcParams.update({'font.size': 20})
 
 #função para fazer o gráfico
+epi = dados['index'].values.tolist()
+mes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+
 def draw_barchart(date):
+    matplotlib.rcParams.update({'font.size': 22})
+    rcParams['font.family'] = 'serif'
+#    rcParams['font.sans-serif'] = ['Lucida Grande']
     ax.clear()
-    dff = dados.sort_values(by=date, ascending=False)
+    dff = s_dados.sort_values(by=date, ascending=False)
     dff.reset_index(drop=True, inplace = True)
     x = dff[:10]
     x = x[::-1]
@@ -99,15 +106,15 @@ def draw_barchart(date):
         cor[c] = colores[x['index'][c]]
     
     ax.barh(x['index'], x[date], color = cor[::-1], alpha = 0.5)
-    ax.text(1, 0.6, 'Semana '+ str(idx.values[0]+1),  transform=ax.transAxes, color='#777777', size=46, ha='right', weight=800)
+    #ax.text(1, 0.6, 'Semana '+ str(idx.values[0]+1),  transform=ax.transAxes, color='#777777', size=46, ha='right', weight=800)
     ax.text(1, 0.5, mes[date.month-1] + ' ' + str(date.year),  transform=ax.transAxes, color='#777777', size=46, ha='right', weight=800)
     ax.text(0, 1.08, 'Evolução do número total de plays por episódio',
             transform=ax.transAxes, size=24, weight=600, ha='left')
     for i, (value, number,name) in enumerate(zip(x[date], x['Episodio'],x['index'])):
         if value != 0:
-            ax.text(value, i,   number ,size=16, weight=450, ha='right', va='top')  # Tokyo: name
-            ax.text(value, i,   name ,size=16, weight=500, ha='right', va='bottom')  # Tokyo: name
-            ax.text(value, i,      value,  size=14, ha='left',  va='center')   # 38194.2: value
+            ax.text(value, i,   name + ": " + number,size=16, weight=600, ha='right', va='center')  # Tokyo: name
+            #ax.text(value, i,   name ,size=16, weight=500, ha='right', va='bottom')  # Tokyo: name
+            ax.text(value, i,     '  '+ str(value),  size=14, ha='left',  va='top')   # 38194.2: value
 
     
     ax.set_xlabel('Plays', fontsize =  25)
